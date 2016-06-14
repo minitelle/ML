@@ -24,7 +24,6 @@ _Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H._ [Qualitative Ac
 library(caret)
 library(rpart)
 library(rpart.plot)
-library(RColorBrewer)
 library(rattle)
 library(randomForest)
 ```

@@ -121,7 +121,7 @@ $(document).ready(function () {
 
 <div id="project-overview" class="section level4">
 <h4>Project Overview</h4>
-<p>With fitness trackers devices like Fitbits, Nike Fuel Band, Jawbone up, the amount of fitness data that one can capture about their own activity has multiplied and such data capture has therefore, become very easy to do and is fairly inexpensive. For the most part, the primary focus of users adopting these devices was to auanitify how much of an activity they are doing (<em>numbers of steps</em>, <em>number of miles walked</em>, <em>number of calories burned</em>, etc.). In this project, we will shift the focus to seeing how well a set of users are actually doing the set of activities they are tracking.</p>
+<p>With fitness trackers devices like Fitbits, Nike Fuel Band, Jawbone up, the amount of fitness data that one can capture about their own activity has multiplied. Such data capture has become very easy to do and is fairly inexpensive. For the most part, the primary focus of users adopting these devices was to auanitify how much of an activity they are doing (<em>numbers of steps</em>, <em>number of miles walked</em>, <em>number of calories burned</em>, etc.). In this project, we will shift the focus to seeing how well a set of users are actually doing the activities they are tracking.</p>
 <p><em>Process:</em> to achieve our goal, we will use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict the manner in which they did the exercise. The data used has been provided under CC license (CC BY-SA) by: <a href="http://groupware.les.inf.puc-rio.br/har" class="uri">http://groupware.les.inf.puc-rio.br/har</a></p>
 <p>For details around the measurement, please look futher into the research by: <em>Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H.</em> <a href="http://groupware.les.inf.puc-rio.br/har#weight_lifting_exercises#ixzz4B6khjQsq">Qualitative Activity Recognition of Weight Lifting Exercises</a>. <em>Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human ’13) . Stuttgart, Germany: ACM SIGCHI, 2013.</em></p>
 <div id="prep-and-data-preprocessing" class="section level5">
@@ -132,9 +132,7 @@ $(document).ready(function () {
 <pre><code>## Loading required package: ggplot2</code></pre>
 <pre class="r"><code>library(rpart)
 library(rpart.plot)
-library(RColorBrewer)
 library(rattle)</code></pre>
-<pre><code>## R session is headless; GTK+ not initialized.</code></pre>
 <pre><code>## Rattle: A free graphical interface for data mining with R.
 ## Version 4.1.0 Copyright (c) 2006-2015 Togaware Pty Ltd.
 ## Type 'rattle()' to shake, rattle, and roll your data.</code></pre>
@@ -154,7 +152,7 @@ getwd()</code></pre>
 <pre class="r"><code># Download the file in the working directory (read.csv is sufficient).
 trainfile &lt;- read.csv(URLtrain)
 testfile &lt;- read.csv(URLtest)
-#confirming the files are present
+# Confirming the files are present
 ls()</code></pre>
 <pre><code>## [1] &quot;testfile&quot;  &quot;trainfile&quot; &quot;URLtest&quot;   &quot;URLtrain&quot;</code></pre>
 <pre class="r"><code># Verify the structure of the Train and Test files.
