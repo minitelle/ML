@@ -1,0 +1,45 @@
+---
+title: "ML-Project"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Project Overview
+
+With fitness trackers devices like Fitbits, Nike Fuel Band, Jawbone up, the amount of fitness data that one can capture about their own activity has multiplied. Such data capture has become very easy to do and is fairly inexpensive. For the most part, the primary focus of users adopting these devices was to auanitify how much of an activity they are doing (_numbers of steps_, _number of miles walked_, _number of calories burned_, etc.). In this project, we will shift the focus to seeing how well a set of users are actually doing the activities they are tracking.
+
+_Process:_ to achieve our goal, we will use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict the manner in which they did the exercise.
+The data used has been provided under CC license (CC BY-SA) by: <http://groupware.les.inf.puc-rio.br/har>
+
+For details around the measurement, please look futher into the research by: 
+_Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H._ [Qualitative Activity Recognition of Weight Lifting Exercises](http://groupware.les.inf.puc-rio.br/har#weight_lifting_exercises#ixzz4B6khjQsq). _Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013._
+
+
+##### Prep and Data Preprocessing
+*Loading of necessary packages*
+```{r}
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(RColorBrewer)
+library(rattle)
+library(randomForest)
+```
+
+*Getting the Data*
+```{r}
+URLtrain <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+URLtest <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+getwd()
+# Download the file in the working directory (read.csv is sufficient).
+trainfile <- read.csv(URLtrain)
+testfile <- read.csv(URLtest)
+# Confirming the files are present
+ls()
+# Verify the structure of the Train and Test files.
+str(trainfile)
+str(testfile)
+```
