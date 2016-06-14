@@ -12,4 +12,4 @@ Repo for the Coursera Practical Machine Learning Course Project. For the assessm
 * The [Rmd](https://github.com/minitelle/ML/blob/master/ML-project.Rmd) file 
 * [HTML page write up](http://minitelle.github.io/ML)
 
-Link to the HTML file
+-minitelle
