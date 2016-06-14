@@ -30,15 +30,17 @@ library(randomForest)
 
 *Getting the Data*
 ```{r}
-URLtrain <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
-URLtest <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+urlTrain <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+urlTest <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
 getwd()
 # Download the file in the working directory (read.csv is sufficient).
-trainfile <- read.csv(URLtrain)
-testfile <- read.csv(URLtest)
+trainFile <- read.csv(urlTrain)
+testFile <- read.csv(urlTest)
 # Confirming the files are present
 ls()
 # Verify the structure of the Train and Test files.
-str(trainfile)
-str(testfile)
+dim(trainFile)
+dim(testFile)
+str(trainFile)
+set.seed(333)
 ```
