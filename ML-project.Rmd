@@ -1,5 +1,5 @@
 ---
-title: "ML-Project"
+title: "PML Project - Qualify Health Tracker Measurement"
 output: html_document
 ---
 
@@ -11,36 +11,137 @@ knitr::opts_chunk$set(echo = TRUE)
 
 With fitness trackers devices like Fitbits, Nike Fuel Band, Jawbone up, the amount of fitness data that one can capture about their own activity has multiplied. Such data capture has become very easy to do and is fairly inexpensive. For the most part, the primary focus of users adopting these devices was to auanitify how much of an activity they are doing (_numbers of steps_, _number of miles walked_, _number of calories burned_, etc.). In this project, we will shift the focus to seeing how well a set of users are actually doing the activities they are tracking.
 
-_Process:_ to achieve our goal, we will use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict the manner in which they did the exercise.
-The data used has been provided under CC license (CC BY-SA) by: <http://groupware.les.inf.puc-rio.br/har>
+_Process:_ to achieve our goal, we will use data from accelerometers on the belt, forearm, arm, and dumbell of `6 participants` to predict the manner in which they completed their exercises.
 
-For details around the measurement, please look futher into the research by: 
-_Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H._ [Qualitative Activity Recognition of Weight Lifting Exercises](http://groupware.les.inf.puc-rio.br/har#weight_lifting_exercises#ixzz4B6khjQsq). _Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013._
+The participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different ways: 
 
+* _Class A_: exactly according to the specification.
+* _Class B_: throwing the elbows to the front.
+* _Class C_: lifting the dumbbell only halfway.
+* _Class D_: lowering the dumbbell only halfway.
+* _Class E_: throwing the hips to the front.
 
-##### Prep and Data Preprocessing
-*Loading of necessary packages*
-```{r}
+(See the [Annex](## Annex) for the data source & a full citation with further details around the measurement).
+
+##### Loading of necessary packages
+```{r, call libraries, results='hide'}
 library(caret)
-library(rpart)
-library(rpart.plot)
-library(rattle)
 library(randomForest)
+library(ggplot2)
 ```
 
-*Getting the Data*
-```{r}
+##### Getting the Data
+
+```{r, get the data}
+# Capture the CSV files needed to training and testing
 urlTrain <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
 urlTest <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
-getwd()
-# Download the file in the working directory (read.csv is sufficient).
-trainFile <- read.csv(urlTrain)
-testFile <- read.csv(urlTest)
-# Confirming the files are present
-ls()
+# Download the file in the working directory (read.csv is sufficient and allows to define NA strings).
+trainFull <- read.csv(urlTrain, na.strings=c('NA','','#DIV/0!'))
+testFull <- read.csv(urlTest, na.strings=c('NA','','#DIV/0!'))
 # Verify the structure of the Train and Test files.
+dim(trainFull)
+dim(testFull)
+```
+The `trainFile` includes 19622 observations and 160 variables, while the `testQuiz` file inlcudes 20 observations with the same number of variables. Per the course prerequisutes, the `classe` variable will be used as the outcome to predict.
+
+##### Data Clean-up and Preprocessing
+
+In this section, the training data `trainFile` is not in a shape that can be used to perform any modeling. Several portion of the data include `NAs`or are missing values entirely (see Annex). Since the project requires us to develp a model to predict the outcome variable `classe`, multiple predictors should also be looked at to determine if they are worth using.
+*Note:* Any transformation applied to the original `trainFile` will also be applied to the final test data set `testQuiz`.
+
+```{r, prep the data}
+# Remove NAs, #DIV/0!', empty spaces & the 1st column that's just an index
+trainFile <- trainFull[, colSums(is.na(trainFull)) == 0]
+trainFile <- trainFile[, -1]
 dim(trainFile)
-dim(testFile)
-str(trainFile)
+testQuiz <- testFull[, colSums(is.na(testFull)) == 0]
+testQuiz <- testQuiz[, -1]
+dim(testQuiz)
+#training <- trainFile[,-c(1,5,6)]
+#str(training)
+```
+##### Developing the analysis Model
+
+Considering the `trainFile` data frame includes 19622 observations, splitting it into a training and validation set makes sense to test the validation of the model to develop.
+```{r, model partition}
+set.seed(12345)
+partition <- createDataPartition(trainFile$classe, p=3/4, list=FALSE)
+trainingSet <- trainFile[partition,]
+validationSet <- trainFile[-partition,]
+dim(trainingSet)
+dim(validationSet)
 set.seed(333)
+```
+
+###### Building our model
+Under the premise of the project to detemine the quality of the exercises, a prediciton model to determine which `classe` performned best could be a classification exercise. One of the best algorithms for such a process is using a `random forest` model even though is can be process intensive.
+
+```{r, build the model}
+#BeginTS <- Sys.time();
+#
+modelTrain <- train(classe ~., method="rf", data=trainingSet, trControl=trainControl(method="cv"),number = 5)
+#
+#EndTS <- Sys.time();
+#duration <- EndTS - BeginTS
+#cat("The execution time of random forest model took about: ", duration, "min.")
+
+# plot most imfluential predictors
+plot(varImp(modelTrain), top=20, title("Variable Importance Plot"))
+```
+From the built model, we look at a the variable importance plot to see if some predictors are more influential than others. We can see some variables related to time stamps appear with high importance, said variables however only serve to capture the time stamp of exercises and don't determine quality, we will subset them from the training, validation and testing datasets to focus on predictors related to the quality of the 'Biceps Curl' exercise.
+```{r, subsetting time stamps}
+# Remove the time stamp columns from train, validation and test files
+removeTS <- grepl("*_time*", names(trainingSet))
+trainingSet = trainingSet[, !removeTS]
+validationSet = validationSet[, !removeTS]
+testQuiz = testQuiz[, !removeTS]
+```
+
+###### Model Accuracy
+To capture the accuracy of the prediction, we first compute the prediction model on the validation set and extract its confusion matrix.
+
+```{r, model prediction}
+# Build the Random Forest prediction
+predTrain <- predict(modelTrain, validationSet)
+CFtrain <- confusionMatrix(predTrain, validationSet$classe)
+CFtrain
+```
+From applying a `random forest` algorithm we can extract the accuracy metric fom the confusionMatrix as well as calculate the out of sample error as follows: 
+```{r, model accuracy}
+CFtrain$overall[1]
+OOSE <- 1 - as.numeric(CFtrain$overall[1])
+OOSE
+```
+
+We can see that applying the prediction model on the validation data set a `r CFtrain$overall[1]` accuracy with a tiny out of sample error `r OOSE`, which allows us to be pretty confident in this model.
+
+##### Final Validation on Test Data
+Finally, we can validate our developed model on the testing data for the `20 test cases` in the quiz part of this project.
+```{r, QuizResults}
+predTest <- predict(modelTrain, testQuiz)
+predTest
+str(predTest)
+str(testQuiz)
+## Accuracy
+#CFtest <- confusionMatrix(predTest, testQuiz[,-length(names(testQuiz))]$classe)
+#CFtest$overall[1]
+#OOSE <- 1 - as.numeric(CFtest$overall[1])
+#OOSE
+```
+\newpage
+
+## Annex
+
+##### Data Source
+* The data used has been provided under CC license (CC BY-SA) by: <http://groupware.les.inf.puc-rio.br/har>
+
+* _Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H._ [Qualitative Activity Recognition of Weight Lifting Exercises](http://groupware.les.inf.puc-rio.br/har#weight_lifting_exercises#ixzz4B6khjQsq). _Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013._
+
+##### Training Data Sctructure
+```{r}
+# Training data structure
+str(trainFull)
+head(trainFile$classe)
+class(trainFile$classe)
 ```
