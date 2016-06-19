@@ -24,7 +24,7 @@ The participants were asked to perform one set of 10 repetitions of the Unilater
 (See the [Annex](## Annex) for the data source & a full citation with further details around the measurement).
 
 ##### Loading of necessary packages
-```{r, call libraries, results='hide'}
+```{r, call libraries, results='hide', message=FALSE}
 library(caret)
 library(randomForest)
 library(ggplot2)
@@ -58,8 +58,6 @@ dim(trainFile)
 testQuiz <- testFull[, colSums(is.na(testFull)) == 0]
 testQuiz <- testQuiz[, -1]
 dim(testQuiz)
-#training <- trainFile[,-c(1,5,6)]
-#str(training)
 ```
 ##### Developing the analysis Model
 
@@ -80,22 +78,24 @@ Under the premise of the project to detemine the quality of the exercises, a pre
 ```{r, build the model}
 #BeginTS <- Sys.time();
 #
-modelTrain <- train(classe ~., method="rf", data=trainingSet, trControl=trainControl(method="cv"),number = 5)
+modelTrain <- train(classe ~., method="rf", data=trainingSet, trControl=trainControl(method="cv"),number = 5, allowParallel=TRUE)
 #
 #EndTS <- Sys.time();
 #duration <- EndTS - BeginTS
 #cat("The execution time of random forest model took about: ", duration, "min.")
 
 # plot most imfluential predictors
-plot(varImp(modelTrain), top=20, title("Variable Importance Plot"))
+plot(varImp(modelTrain), top=20)
 ```
-From the built model, we look at a the variable importance plot to see if some predictors are more influential than others. We can see some variables related to time stamps appear with high importance, said variables however only serve to capture the time stamp of exercises and don't determine quality, we will subset them from the training, validation and testing datasets to focus on predictors related to the quality of the 'Biceps Curl' exercise.
+
+From the built model, we look at a the variable importance plot to see if some predictors are more influential than others. We can see some variables related to time stamps appear with high importance, said variables however only serve to capture the time stamp of exercises and don't determine quality, we will subset them from the training, validation and testing datasets to focus on predictors related to the quality of the 'Biceps Curl' exercise and refit the model.
 ```{r, subsetting time stamps}
 # Remove the time stamp columns from train, validation and test files
 removeTS <- grepl("*_time*", names(trainingSet))
 trainingSet = trainingSet[, !removeTS]
 validationSet = validationSet[, !removeTS]
 testQuiz = testQuiz[, !removeTS]
+modelTrain <- train(classe ~., method="rf", data=trainingSet, trControl=trainControl(method="cv"),number = 5, allowParallel=TRUE)
 ```
 
 ###### Model Accuracy
@@ -114,20 +114,13 @@ OOSE <- 1 - as.numeric(CFtrain$overall[1])
 OOSE
 ```
 
-We can see that applying the prediction model on the validation data set a `r CFtrain$overall[1]` accuracy with a tiny out of sample error `r OOSE`, which allows us to be pretty confident in this model.
+We can see that applying the prediction model on the validation data set a `r round(CFtrain$overall[1]*100, digits=2)`% accuracy with a tiny out of sample error `r round(OOSE * 100, digits=2)`%, which allows us to be pretty confident in this model.
 
 ##### Final Validation on Test Data
 Finally, we can validate our developed model on the testing data for the `20 test cases` in the quiz part of this project.
 ```{r, QuizResults}
 predTest <- predict(modelTrain, testQuiz)
 predTest
-str(predTest)
-str(testQuiz)
-## Accuracy
-#CFtest <- confusionMatrix(predTest, testQuiz[,-length(names(testQuiz))]$classe)
-#CFtest$overall[1]
-#OOSE <- 1 - as.numeric(CFtest$overall[1])
-#OOSE
 ```
 \newpage
 
